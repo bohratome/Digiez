@@ -2,8 +2,8 @@ import logging
 from logging import FileHandler
 from flask import Flask, request, json
 from digiez_api.views import *
-# from digiez_api.extensions import db
-from . Models.account import db
+from digiez_api.extensions import db
+# from . models.account import db
 
 
 def create_app(config_module):
@@ -15,8 +15,8 @@ def create_app(config_module):
     # Blueprints
     # TODO: automate blueprint loading ? (for loop with package attr)
     app_.register_blueprint(api_accounts.api_accounts)
-    # app_.register_blueprint(api_malls.api_malls)
-    # app_.register_blueprint(api_malls.api_malls)
+    app_.register_blueprint(api_malls.api_malls)
+    # app_.register_blueprint(api_units.api_units)
     return app_
 
 
