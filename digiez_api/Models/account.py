@@ -1,16 +1,15 @@
-import datetime
+
 from flask import Flask
 from marshmallow import Schema, fields, pre_load, validate
 from digiez_api.extensions import db, ma
+from . base_model import BaseModel, now
 
 
-def now():
-    return datetime.datetime.utcnow()
-
-class Account(db.Model):
+class Account(db.Model, BaseModel):
     __tablename__ = 'accounts'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), unique=True, nullable=False)
+    malls = db.relationship('Mall', lazy='joined')
     creation_date = db.Column(
         'CREATION_DATE', db.DateTime, default=now, nullable=False)
     last_modification_date = db.Column(

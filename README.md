@@ -4,7 +4,6 @@ Running App using Docker:
 
 Running App using virtual env:
 > python -m venv env
-> python -m venv env
 > pip install -r requirements.txt
 > python runserver.py
 

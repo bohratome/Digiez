@@ -1,9 +1,13 @@
+import datetime
 from flask import current_app
 from digiez_api.extensions import db
 
+
+def now():
+    return datetime.datetime.utcnow()
+
+
 class BaseModel:
-    def __repr__(self):
-        return self.__class__.__name__ + '[' + self.name + ']'
 
     def save(self, commit=True):
         try:
@@ -16,4 +20,13 @@ class BaseModel:
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(' | '.join(['Error on save', repr(e)]))
-            # raise ModelPersistError(e, model=self.__class__.__name__)
+
+    def update(self, data):
+        self.__init__(**data)
+        return self
+
+    @classmethod
+    def delete(cls, obj_id):
+        deleted_count = cls.query.filter(cls.id == obj_id).delete()
+        db.session.commit()
+        return deleted_count

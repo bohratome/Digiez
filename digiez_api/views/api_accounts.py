@@ -1,4 +1,4 @@
-from flask import abort, jsonify, request, Blueprint
+from flask import abort, request, Blueprint
 from digiez_api.Models import *
 
 
@@ -31,7 +31,6 @@ def get_account(account_id):
             -   in: path
                 required: true
                 name: account_id
-                description: ID of the service to retrieve
                 type: integer
     responses:
             200:
@@ -40,6 +39,8 @@ def get_account(account_id):
                     description: No Account found for given id
     """
     account = Account.query.get(account_id)
+    if not account:
+        abort(404)
     account = account_schema.dump(account)
     return {'status': 'success', 'data': account}, 200
 
@@ -60,15 +61,16 @@ def create_account():
         return {'message': 'No input data provided'}, 400
     # # Validate and deserialize input
     data = account_schema.load(json_data)
-    category = Account.query.filter_by(name=data['name']).first()
-    if category:
+    account = Account.query.filter_by(name=data['name']).first()
+    if account:
         return {'message': 'Account already exists'}, 400
     account = Account(
         name=json_data['name']
     )
-    db.session.add(account)
-    db.session.commit()
-
+    account.save()
+    # db.session.add(account)
+    # db.session.commit()
+    #
     result = account_schema.dump(account)
     return {"status": 'success', 'data': result}, 201
 
@@ -83,7 +85,6 @@ def edit_account(account_id):
             -   in: path
                 required: true
                 name: account_id
-                description: ID of the account to edit
                 type: integer
     responses:
             200:
@@ -91,28 +92,26 @@ def edit_account(account_id):
             404:
                     description: No account found for given id
     """
-    json_data = request.get_json(force=True)
-    if not json_data:
-        return {'message': 'No input data provided'}, 400
-    # Validate and deserialize input
-    data = account_schema.load(json_data)
-    # category = Account.query.filter_by(id=data['id']).first()
+    # json_data = request.get_json(force=True)
+    # if not json_data:
+    #     return {'message': 'No input data provided'}, 400
+    # # Validate and deserialize input
+    # data = account_schema.load(json_data)
+    # # category = Account.query.filter_by(id=data['id']).first()
+    # account = Account.query.get(account_id)
+    # if not account:
+    #     return {'message': 'Category does not exist'}, 400
+    # account.name = data['name']
+    # db.session.commit()
+    data = request.get_json()
     account = Account.query.get(account_id)
     if not account:
-        return {'message': 'Category does not exist'}, 400
-    account.name = data['name']
-    db.session.commit()
+        abort(404)
+    account.update(data)
+    account.save()
     result = account_schema.dump(account)
-    print(result)
+    return {"status": 'success', 'data': result}, 200
 
-    return {"status": 'success', 'data': result}, 204
-
-    # zone = Account.query.get(account_id)
-    # if not zone:
-    #     return abort(404)
-    # zone.update(request.get_json())
-    # zone.save()
-    # return jsonify(zone=zone.to_json())
 
 @api_accounts.route('/<account_id>', methods=['DELETE'])
 def delete_account(account_id):
@@ -125,7 +124,6 @@ def delete_account(account_id):
             -   in: path
                 required: true
                 name: account_id
-                description: ID of the account to delete
                 type: integer
     responses:
             204:
@@ -133,23 +131,20 @@ def delete_account(account_id):
             404:
                     description: No account found for given id
     """
-    json_data = request.get_json(force=True)
-    if not json_data:
-        return {'message': 'No input data provided'}, 400
+    # json_data = request.get_json(force=True)
+    # if not json_data:
+    #     return {'message': 'No input data provided'}, 400
     # Validate and deserialize input
-    data = account_schema.load(json_data)
+    # data = account_schema.load(json_data)
     # data, errors = account_schema.load(json_data)
     # if errors:
     #     return errors, 422
-    account = Account.query.filter_by(id=account_id).delete()
-    db.session.commit()
-    result = account_schema.dump(account)
+    # account = Account.query.filter_by(id=account_id).delete()
+    # db.session.commit()
 
-    return {"status": 'success', 'data': result}, 204
-
-    # deleted_count = Zone.delete(zone_id)
-    # if not deleted_count:
-    #     abort(404)
-    # if deleted_count != 1:
-    #     abort(500)
-    # return '', 204
+    deleted_count = Account.delete(account_id)
+    if not deleted_count:
+        abort(404)
+    # result = account_schema.dump(account)
+    # return {"status": 'success', 'data': result}, 204
+    return '', 204
